@@ -242,6 +242,7 @@ Purpose:
   vertices can be partitioned into two sets such that no intra-set edge exists.
 
 Pseudocode (high-level):
+```
   INPUT: graph G
   Build an undirected adjacency view (u -> neighbors) from G.list_edges() and G.list_nodes()
   color[node] := -1 for all nodes  // -1 = uncolored, 0/1 = two colors
@@ -260,6 +261,7 @@ Pseudocode (high-level):
           return false  // same color on adjacent vertices -> not bipartite
 
   return true
+```
 
 Notes:
   - If your graph is directed, treat edges as undirected for bipartiteness testing.
@@ -278,6 +280,7 @@ Purpose:
   - Undirected graphs -> use DFS with parent tracking (ignore the parent edge).
 
 Pseudocode (directed):
+```
   INPUT: directed graph G
   color[u] := 0 for all u  // 0=white, 1=gray, 2=black
   for each node u:
@@ -294,8 +297,10 @@ Pseudocode (directed):
         return false  // back-edge to gray node -> cycle
     color[u] := 2
     return true
+```
 
 Pseudocode (undirected):
+```
   visited[u] := false for all u
   for each node u:
     if not visited[u]:
@@ -310,7 +315,7 @@ Pseudocode (undirected):
       else if v != parent:
         return false  // found a non-parent visited neighbor -> cycle
     return true
-
+```
 Complexity:
   - Time: O(n + m)
   - Space: O(n) for recursion/stack, color/visited arrays
@@ -321,10 +326,12 @@ Purpose:
   Compute strongly connected components (SCCs) of a directed graph.
 
 Pseudocode:
+```
   INPUT: directed graph G
-  1) Build adjacency and reversed adjacency lists from G.list_edges()
-  2) visited[u] := false for all u
-  3) order := empty list
+  // Build adjacency and reversed adjacency lists from G.list_edges()
+  visited[u] := false for all u
+  // ordering
+  order := empty list
      for each u:
        if not visited[u]: dfs1(u)
      dfs1(u):
@@ -333,7 +340,8 @@ Pseudocode:
          if not visited[v]: dfs1(v)
        order.push_back(u) // finish order
 
-  4) visited[u] := false for all u
+  // visiting
+  visited[u] := false for all u
      components := []
      for u in reverse(order):
        if not visited[u]:
@@ -347,6 +355,7 @@ Pseudocode:
          if not visited[v]: dfs2(v, comp)
 
   return components
+```
 
 Notes:
   - Each component is a set of nodes mutually reachable.
@@ -364,6 +373,7 @@ Purpose:
   augmenting paths in the residual graph (Edmonds–Karp variant of Ford–Fulkerson).
 
 Pseudocode:
+```
   INPUT: directed graph G, source s, sink t, cap_extractor(edge_prop) -> capacity
   Build residual capacity map capacity[u,v] from all edges (sum capacities for parallel edges).
   Initialize reverse capacities capacity[v,u] = 0 if absent.
@@ -388,6 +398,7 @@ Pseudocode:
     flow += bottleneck
 
   return flow
+```
 
 Notes:
   - Cap_extractor must return non-negative numeric capacity.
@@ -405,6 +416,7 @@ Purpose:
   Single-source shortest paths allowing negative edge weights. Detects negative-weight cycles reachable from the source.
 
 Pseudocode:
+```
   INPUT: graph G, start s, extractor(edge_prop) -> weight (numeric)
   Initialize dist[u] := +infinity for all u; prev[u] := null
   dist[s] := 0
@@ -430,7 +442,7 @@ Pseudocode:
       break
 
   return (dist, prev, has_negative)
-
+```
 Notes:
   - If has_negative is true, shortest path distances are undefined (negative cycle affects them).
   - For negative-cycle detection anywhere in graph, run BF from every node (or add a super-source with 0-weight edges to all nodes).
