@@ -2,7 +2,8 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#include "Node.h"
+#include "Node.hpp"
+#include "util.hpp"
 
 #include <unordered_map>
 #include <unordered_set>

@@ -582,7 +582,7 @@ auto bellman_ford(const G &g,
 // Convenience wrapper: check only boolean whether negative cycle exists anywhere
 template <typename G, typename Extractor>
 bool has_negative_cycle(const G &g, Extractor extractor) {
-    using id_type = typename G::id_type;
+    // using id_type = typename G::id_type;
     // choose arbitrary start; run Bellman-Ford from each connected component (safer)
     // We'll run Bellman-Ford with artificial super-source connecting to all nodes with 0 weight
     // to detect negative cycles anywhere. To avoid changing Graph, do repeated BF from each node:
