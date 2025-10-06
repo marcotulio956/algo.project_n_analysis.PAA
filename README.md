@@ -1,3 +1,4 @@
+## PAA (Algortihms Project and Analysis) 2025.2
 
 ### BFS (Breadth-First Search) - PSEUDOCODE & COMPLEXITY
 
@@ -6,6 +7,7 @@ Purpose:
   Produces an order of visited node ids.
 
 Pseudocode:
+```
   INPUT: graph G, start node s
   if not G.has_node(s): return empty_list
 
@@ -25,7 +27,7 @@ Pseudocode:
         enqueue(Q, v)
 
   return order
-
+```
 Notes:
   - For an unweighted graph, BFS computes shortest paths (in edges) from s to all reachable nodes.
   - For directed graphs, neighbors(u) yields outgoing neighbors (BFS follows edge direction).
@@ -47,6 +49,7 @@ Purpose:
   stack version mimics recursive DFS. Returns visit order (preorder).
 
 Pseudocode:
+```
   INPUT: graph G, start node s
   if not G.has_node(s): return empty_list
 
@@ -67,7 +70,7 @@ Pseudocode:
         push S, v
 
   return order
-
+```
 Notes:
   - For directed graphs, DFS follows outgoing edges.
   - Order depends on neighbor ordering; reversing neighbors approximates the
@@ -96,6 +99,7 @@ Constraints:
   - If start node doesn't exist, the implementation throws an exception.
 
 Pseudocode:
+```
   INPUT: graph G, start s, extractor function extractor(edge_prop) -> Weight
   assert extractor returns arithmetic type
   if not G.has_node(s): throw exception
@@ -121,7 +125,7 @@ Pseudocode:
         push PQ (dist[v], v)
 
   return (dist, prev)
-
+```
 Notes:
   - Using a binary heap (std::priority_queue), decrease-key is simulated by pushing
     duplicates and skipping stale entries when popped.
@@ -155,6 +159,7 @@ Purpose:
   reconstruct path from the (implicit) start node to a target node.
 
 Pseudocode:
+```
   INPUT: prev: map id -> optional<id>, target t
   path := empty list
   if prev does not contain t: return empty list
@@ -167,7 +172,7 @@ Pseudocode:
     cur := prev[cur].value()
   reverse(path)  // we built it backwards
   return path
-
+```
 Notes:
   - Caller should check distances[target] to decide between "start node" vs "unreachable".
   - If prev[target] == nullopt but target == start, you may want to return [start];
@@ -186,6 +191,7 @@ Purpose:
   Throws / signals error if the graph contains a cycle.
 
 Pseudocode:
+```
   INPUT: directed graph G
   if not G.directed(): throw logic_error
 
@@ -212,7 +218,7 @@ Pseudocode:
     throw runtime_error("cycle detected")
 
   return order
-
+```
 Notes:
   - Works only for directed graphs.
   - Kahn's algorithm yields a valid topo ordering if and only if graph has no cycles.
@@ -229,3 +235,206 @@ Complexity:
       - output order: O(n)
       => O(n)
 
+### BIPARTITE CHECK - PSEUDOCODE, NOTES & COMPLEXITY
+
+Purpose:
+  Determine whether an undirected graph is bipartite (2-colorable), i.e.
+  vertices can be partitioned into two sets such that no intra-set edge exists.
+
+Pseudocode (high-level):
+  INPUT: graph G
+  Build an undirected adjacency view (u -> neighbors) from G.list_edges() and G.list_nodes()
+  color[node] := -1 for all nodes  // -1 = uncolored, 0/1 = two colors
+
+  for each node s in nodes:
+    if color[s] != -1: continue
+    color[s] := 0
+    enqueue(Q, s)
+    while Q not empty:
+      u := dequeue(Q)
+      for each v in adj[u]:
+        if color[v] == -1:
+          color[v] := color[u] XOR 1
+          enqueue(Q, v)
+        else if color[v] == color[u]:
+          return false  // same color on adjacent vertices -> not bipartite
+
+  return true
+
+Notes:
+  - If your graph is directed, treat edges as undirected for bipartiteness testing.
+  - Works on disconnected graphs by initiating BFS from every uncolored node.
+
+Complexity:
+  - Let n = |V|, m = |E|.
+  - Time: O(n + m) (build view O(n+m), BFS visits each edge once)
+  - Space: O(n + m) for adjacency view, O(n) for color map.
+
+### ACYCLIC CHECK - PSEUDOCODE, NOTES & COMPLEXITY
+
+Purpose:
+  Detect whether G contains any cycle.
+  - Directed graphs -> use DFS and detect back-edges (coloring method).
+  - Undirected graphs -> use DFS with parent tracking (ignore the parent edge).
+
+Pseudocode (directed):
+  INPUT: directed graph G
+  color[u] := 0 for all u  // 0=white, 1=gray, 2=black
+  for each node u:
+    if color[u] == 0:
+      if not dfs_visit(u): return false
+  return true
+
+  dfs_visit(u):
+    color[u] := 1
+    for each v in neighbors(u):
+      if color[v] == 0:
+        if not dfs_visit(v): return false
+      else if color[v] == 1:
+        return false  // back-edge to gray node -> cycle
+    color[u] := 2
+    return true
+
+Pseudocode (undirected):
+  visited[u] := false for all u
+  for each node u:
+    if not visited[u]:
+      if not dfs_undirected(u, parent = u): return false
+  return true
+
+  dfs_undirected(u, parent):
+    visited[u] := true
+    for each v in neighbors(u):
+      if not visited[v]:
+        if not dfs_undirected(v, u): return false
+      else if v != parent:
+        return false  // found a non-parent visited neighbor -> cycle
+    return true
+
+Complexity:
+  - Time: O(n + m)
+  - Space: O(n) for recursion/stack, color/visited arrays
+
+### KOSARAJU'S SCC - PSEUDOCODE, NOTES & COMPLEXITY
+
+Purpose:
+  Compute strongly connected components (SCCs) of a directed graph.
+
+Pseudocode:
+  INPUT: directed graph G
+  1) Build adjacency and reversed adjacency lists from G.list_edges()
+  2) visited[u] := false for all u
+  3) order := empty list
+     for each u:
+       if not visited[u]: dfs1(u)
+     dfs1(u):
+       visited[u] = true
+       for v in adj[u]:
+         if not visited[v]: dfs1(v)
+       order.push_back(u) // finish order
+
+  4) visited[u] := false for all u
+     components := []
+     for u in reverse(order):
+       if not visited[u]:
+         comp := []
+         dfs2(u, comp) // on reversed graph
+         components.push_back(comp)
+     dfs2(u, comp):
+       visited[u] = true
+       comp.push_back(u)
+       for v in rev_adj[u]:
+         if not visited[v]: dfs2(v, comp)
+
+  return components
+
+Notes:
+  - Each component is a set of nodes mutually reachable.
+  - For undirected graphs, Kosaraju returns connected components (since rev = adj).
+  - Requires two DFS passes and reversed graph.
+
+Complexity:
+  - Time: O(n + m)
+  - Space: O(n + m) for adj + rev_adj and recursion/storage for components
+
+### EDMONDS-KARP (MAX FLOW) - PSEUDOCODE, NOTES & COMPLEXITY
+
+Purpose:
+  Compute maximum s->t flow in a directed network using BFS to find shortest
+  augmenting paths in the residual graph (Edmonds–Karp variant of Ford–Fulkerson).
+
+Pseudocode:
+  INPUT: directed graph G, source s, sink t, cap_extractor(edge_prop) -> capacity
+  Build residual capacity map capacity[u,v] from all edges (sum capacities for parallel edges).
+  Initialize reverse capacities capacity[v,u] = 0 if absent.
+  flow := 0
+
+  While there exists an s->t path in residual graph (found by BFS that respects capacity > 0):
+    parent[v] := previous node found by BFS
+    // compute bottleneck
+    bottleneck := +infinity
+    v := t
+    while v != s:
+      u := parent[v]
+      bottleneck := min(bottleneck, capacity[u,v])
+      v := u
+    // apply bottleneck
+    v := t
+    while v != s:
+      u := parent[v]
+      capacity[u,v] -= bottleneck
+      capacity[v,u] += bottleneck
+      v := u
+    flow += bottleneck
+
+  return flow
+
+Notes:
+  - Cap_extractor must return non-negative numeric capacity.
+  - If G is undirected, treat each undirected edge as two directed edges (u->v and v->u).
+  - Edmonds-Karp uses BFS so each augmenting path is shortest in edges, and the
+    algorithm runs in O(V * E^2) worst-case (but simpler to think: O(E * maxflow) when capacities are integers).
+
+Complexity:
+  - Time (worst-case): O(V * E^2) for Edmonds-Karp, or O(E * max_flow_value) in another view.
+  - Space: O(n + m) for residual capacities and adjacency.
+
+###  BELLMAN-FORD - PSEUDOCODE, NOTES & COMPLEXITY
+
+Purpose:
+  Single-source shortest paths allowing negative edge weights. Detects negative-weight cycles reachable from the source.
+
+Pseudocode:
+  INPUT: graph G, start s, extractor(edge_prop) -> weight (numeric)
+  Initialize dist[u] := +infinity for all u; prev[u] := null
+  dist[s] := 0
+
+  // relax edges (n - 1) times
+  n := number_of_nodes
+  for i in 1 .. n-1:
+    updated := false
+    for each edge (u, v, prop) in G.list_edges():
+      w := extractor(prop)
+      if dist[u] != +inf and dist[u] + w < dist[v]:
+        dist[v] := dist[u] + w
+        prev[v] := u
+        updated := true
+    if not updated: break
+
+  // check for negative cycles
+  has_negative := false
+  for each edge (u, v, prop) in G.list_edges():
+    w := extractor(prop)
+    if dist[u] != +inf and dist[u] + w < dist[v]:
+      has_negative := true
+      break
+
+  return (dist, prev, has_negative)
+
+Notes:
+  - If has_negative is true, shortest path distances are undefined (negative cycle affects them).
+  - For negative-cycle detection anywhere in graph, run BF from every node (or add a super-source with 0-weight edges to all nodes).
+
+Complexity:
+  - Time: O(n * m)
+  - Space: O(n) for dist/prev
