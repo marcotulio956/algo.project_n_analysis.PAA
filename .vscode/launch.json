@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C++: Compile & Run with GDB",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${fileDirname}/a.out",  // The output file to run with GDB
+      "args": [],
+      "stopAtEntry": false,               // You can set to true if you want to stop at the first line of your program
+      "cwd": "${workspaceFolder}",
+      "MIMode": "gdb",                    // Use GDB for debugging
+      "miDebuggerPath": "/usr/bin/gdb",    // Make sure this points to your GDB executable
+      "preLaunchTask": "g++ Compile & Run", // This triggers the task before launching GDB
+      "externalConsole": true,            // Launches the program in an external terminal
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ],
+      "postDebugTask": "close-terminal"  // Add this to close the terminal after debugging ends
+    }
+  ]
+}

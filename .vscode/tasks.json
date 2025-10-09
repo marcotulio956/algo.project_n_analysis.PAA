@@ -1,0 +1,27 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "g++ Compile & Run",
+      "type": "shell",
+      "command": "g++",
+      "args": [
+        "-I/include",  // Adjust your include path if needed
+        "${file}",     // The current file in the editor
+        "-o", "${fileDirname}/a.out"  // Output the compiled executable as a.out
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"],
+      "detail": "Compiles the current C++ file into a.out"
+    },
+    {
+      "label": "close-terminal",  // This task closes the terminal
+      "type": "shell",
+      "command": "exit",         // Close the terminal after debugging finishes
+      "problemMatcher": []
+    }
+  ]
+}
