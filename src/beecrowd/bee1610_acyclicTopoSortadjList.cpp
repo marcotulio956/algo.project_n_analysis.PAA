@@ -1,7 +1,4 @@
-#include <iostream>
-#include <vector>
-#include <queue>
-
+#include <bits/stdc++.h>
 using namespace std;
 using adj_type = vector<vector<int>>;
 
