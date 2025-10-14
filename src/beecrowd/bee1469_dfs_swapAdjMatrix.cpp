@@ -1,111 +1,98 @@
 #include <bits/stdc++.h>
 using namespace std;
 
-#define MAXV 500
-#define ADJ 1
-#define NADJ 0
-#define WHITE 0
-#define CINZA 1
-#define PRETO 2
-#define NULO -1
-#define MAX_AGE 101
+vector<vector<unsigned char>> adj;
+vector<int> ages;
+int numEmployees;
 
-static char m[MAXV + 1][MAXV + 1];
-static int N;
-static int c[MAXV + 1];
-static int d[MAXV + 1];
-static int t[MAXV + 1];
-static int a[MAXV + 1];
-static int finishTime;
-static int ages[MAXV + 1];
-static int age;
-
-void printvet(int vet[]){
-    for(int i = 1; i <= N; i++){
-        cout << vet[i] << ", ";
+void swapPositions(int a, int b){
+    if (a == b){
+        return;
     }
-    cout << "\n";
+
+    for (int col = 1; col <= numEmployees; ++col){
+        unsigned char temp = adj[a][col];
+        adj[a][col] = adj[b][col];
+        adj[b][col] = temp;
+    }
+
+    for (int row = 1; row <= numEmployees; ++row){
+        unsigned char temp = adj[row][a];
+        adj[row][a] = adj[row][b];
+        adj[row][b] = temp;
+    }
 }
 
-void init(){
-    memset(m, NADJ, sizeof(m));
-}
+void dfs(int u, vector<int> &color, int &bestAge){
+    color[u] = 1;
 
-void DFS_VISIT(int u){
-    c[u] = CINZA;
-    finishTime++;
-    d[u] = finishTime;
-    for(int v = 1; v <= N; v++){
-        if(m[u][v] == ADJ){
-            if(c[v] == WHITE){
-                if (ages[v] < age) age = ages[v];
-                a[v] = u;
-                DFS_VISIT(v);
+    for (int v = 1; v <= numEmployees; ++v){
+        if (adj[u][v] == 1){
+            if (color[v] == 0){
+                if (ages[v] < bestAge){
+                    bestAge = ages[v];
+                }
+                dfs(v, color, bestAge);
             }
         }
     }
-    c[u] = PRETO;
-    finishTime++;
-    t[u] = finishTime;
+
+    color[u] = 2;
 }
 
-void DFS(int emp){
-    age = MAX_AGE;
-    for(int u = 1; u <= N; u++){
-        c[u] = WHITE;
-        d[u] = NULO;
-        t[u] = NULO;
-        a[u] = NULO;
+void queryYoungestManager(int employee){
+    vector<int> color(numEmployees + 1, 0);
+    int bestAge = 101;
+
+    dfs(employee, color, bestAge);
+
+    if (bestAge == 101){
+        cout << "*\n";
     }
-    finishTime = 0;
-    if(c[emp] == WHITE) DFS_VISIT(emp);
-}
-
-
-
-void swap(int mng, int empl) {
-    int aux;
-    for (int i = 1; i <= N; i++) {
-        aux = m[mng][i];
-        m[mng][i] = m[empl][i];
-        m[empl][i] = aux;
-    }
-    for (int i = 1; i <= N; i++) {
-        aux = m[i][mng];
-        m[i][mng] = m[i][empl];
-        m[i][empl] = aux;
+    else{
+        cout << bestAge << "\n";
     }
 }
 
 int main(){
-    ios::sync_with_stdio(false);
-    cin.tie(nullptr);
 
-    int np, nr, ni;
-    while (cin >> np >> nr >> ni){
-        init();
-        N = np;
-        for (int i = 1; i <= np; i++){
+    while (true){
+        int numRelations;
+        int numInstructions;
+
+        if (!(cin >> numEmployees >> numRelations >> numInstructions)){
+            break;
+        }
+
+        ages.assign(numEmployees + 1, 0);
+
+        for (int i = 1; i <= numEmployees; ++i){
             cin >> ages[i];
         }
-        int mng, empl;
-        for (int i = 1; i <= nr; i++){
-            cin >> mng >> empl;
-            m[empl][mng] = ADJ;
+
+        adj.assign(numEmployees + 1, vector<unsigned char>(numEmployees + 1, 0));
+
+        for (int i = 0; i < numRelations; ++i){
+            int manager;
+            int subordinate;
+            cin >> manager >> subordinate;
+            adj[subordinate][manager] = 1;
         }
-        char isntr;
-        for (int i = 1; i <= ni; i++){
-            cin >> isntr;
-            if (isntr == 'P'){
-                int emp;
-                cin >> emp;
-                DFS(emp);
-                if (age == MAX_AGE) cout << "*\n";
-                else cout << age << "\n";
+
+        for (int i = 0; i < numInstructions; ++i){
+            char instruction;
+            cin >> instruction;
+
+            if (instruction == 'T'){
+                int a;
+                int b;
+                cin >> a >> b;
+                swapPositions(a, b);
             }
-            if (isntr == 'T'){
-                cin >> mng >> empl;
-                swap(mng, empl);
+            else if (instruction == 'P'){
+                int e;
+                cin >> e;
+                queryYoungestManager(e);
             }
         }
     }
