@@ -1,5 +1,5 @@
 #### beecrowd:
-```rm -rf bee1442.out output.txt &&  g++ src/beecrowd/bee1442.cpp -o bee1442.out && (./bee1442.out < ./input.txt) > ./output.txt```
+```rm -rf bee.out output.txt &&  g++ src/beecrowd/bee.cpp -o bee.out && (./bee.out < ./input.txt) > ./output.txt```
 
 obs: https://www.udebug.com/ (several user-submitted test cases)
 
